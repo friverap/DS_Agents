@@ -88,7 +88,7 @@ graph TD
     A[Usuario] --> B[Query Router]
     B --> C{Tipo de Consulta}
     
-    C -->|Simple/Conversacional| D[/api/chat/simple]
+    C -->|Simple/Conversacional| D["API Chat Simple"]
     C -->|Análisis de Datos| E[Sistema Multi-Agente]
     C -->|Búsqueda Web| F[Web Search Agent]
     
@@ -108,7 +108,7 @@ graph TD
     O --> M
     
     L --> N
-    O --> P[ML Agent Scikit-learn]
+    O --> P["ML Agent Scikit-learn"]
     P --> M
     
     F --> Q[Brave Search API]
