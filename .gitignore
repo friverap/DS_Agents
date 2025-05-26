@@ -1,0 +1,104 @@
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+venv_*/
+ENV/
+env/
+
+# IDE files
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+backend/logs/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Project specific
+data/
+models/
+results/
+temp/
+*.pkl
+
+# Test files
+test_*.py
+test_*.txt
+test_*.html
+*_test.py
+*_response.txt
+
+# Uploads (keep directory but ignore contents)
+uploads/*.csv
+uploads/*.xlsx
+uploads/*.xls
+uploads/*.json
+uploads/*.txt
+
+# Docker
+.dockerignore
+
+# Backup files
+backup/
+*.backup
+*.bak
+
+# Temporary files
+tmp/
+*.tmp
+*.temp
+
+# Additional patterns can be added here as needed 

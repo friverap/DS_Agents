@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #messages {
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 200px;
+            margin-bottom: 10px;
+            overflow-y: auto;
+        }
+        button {
+            padding: 8px 16px;
+            margin-right: 10px;
+        }
+        input {
+            padding: 8px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Voice Assistant WebSocket Test</h1>
+    
+    <div id="messages"></div>
+    
+    <div>
+        <button id="connect">Connect</button>
+        <button id="disconnect">Disconnect</button>
+        <button id="start">Start Listening</button>
+        <button id="stop">Stop Listening</button>
+    </div>
+    
+    <div style="margin-top: 10px;">
+        <input id="text-input" type="text" placeholder="Enter text command">
+        <button id="send">Send</button>
+    </div>
+    
+    <script>
+        let socket = null;
+        
+        // Helper to log messages
+        function logMessage(msg, isError = false) {
+            const messagesDiv = document.getElementById('messages');
+            const p = document.createElement('p');
+            p.textContent = msg;
+            if (isError) {
+                p.style.color = 'red';
+            }
+            messagesDiv.appendChild(p);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Connect to WebSocket
+        document.getElementById('connect').addEventListener('click', () => {
+            if (socket && socket.readyState !== WebSocket.CLOSED) {
+                logMessage('Already connected', true);
+                return;
+            }
+            
+            try {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const host = window.location.host;
+                
+                socket = new WebSocket(`${protocol}//${host}/api/voice/ws`);
+                
+                socket.addEventListener('open', (event) => {
+                    logMessage('WebSocket connection established');
+                });
+                
+                socket.addEventListener('message', (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        logMessage(`Received: ${JSON.stringify(data)}`);
+                    } catch (e) {
+                        logMessage(`Received non-JSON message: ${event.data}`);
+                    }
+                });
+                
+                socket.addEventListener('close', (event) => {
+                    logMessage('WebSocket connection closed');
+                    socket = null;
+                });
+                
+                socket.addEventListener('error', (error) => {
+                    logMessage('WebSocket error', true);
+                    console.error(error);
+                });
+            } catch (error) {
+                logMessage(`Error connecting: ${error.message}`, true);
+            }
+        });
+        
+        // Disconnect WebSocket
+        document.getElementById('disconnect').addEventListener('click', () => {
+            if (!socket || socket.readyState === WebSocket.CLOSED) {
+                logMessage('Not connected', true);
+                return;
+            }
+            
+            socket.close();
+            logMessage('Disconnected');
+        });
+        
+        // Start listening
+        document.getElementById('start').addEventListener('click', () => {
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                logMessage('Not connected', true);
+                return;
+            }
+            
+            socket.send(JSON.stringify({ action: 'start_listening' }));
+            logMessage('Sent start_listening command');
+        });
+        
+        // Stop listening
+        document.getElementById('stop').addEventListener('click', () => {
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                logMessage('Not connected', true);
+                return;
+            }
+            
+            socket.send(JSON.stringify({ action: 'stop_listening' }));
+            logMessage('Sent stop_listening command');
+        });
+        
+        // Send text command
+        document.getElementById('send').addEventListener('click', () => {
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                logMessage('Not connected', true);
+                return;
+            }
+            
+            const text = document.getElementById('text-input').value.trim();
+            if (!text) {
+                logMessage('Please enter text', true);
+                return;
+            }
+            
+            socket.send(JSON.stringify({ 
+                action: 'process_text', 
+                text: text 
+            }));
+            
+            logMessage(`Sent text: ${text}`);
+            document.getElementById('text-input').value = '';
+        });
+        
+        // Also send on enter
+        document.getElementById('text-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('send').click();
+            }
+        });
+        
+        // Auto-connect when page loads
+        window.addEventListener('load', () => {
+            logMessage('Page loaded. Click "Connect" to start.');
+        });
+    </script>
+</body>
+</html> 

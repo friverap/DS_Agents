@@ -1,0 +1,93 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dsagency-auto-analyst-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - ./uploads:/app/uploads
+      - backend-logs:/app/logs
+    networks:
+      - dsagency-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dsagency-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend/static:/usr/share/nginx/html
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - dsagency-network
+    restart: unless-stopped
+    environment:
+      - BACKEND_URL=http://backend:8000
+
+  # Optional: MongoDB for session storage (not required for basic functionality)
+  mongo:
+    image: mongo:latest
+    container_name: dsagency-mongo
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - dsagency-network
+    restart: unless-stopped
+    profiles:
+      - database
+
+  # Optional: Redis for caching (not required for basic functionality)
+  redis:
+    image: redis:alpine
+    container_name: dsagency-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - dsagency-network
+    restart: unless-stopped
+    profiles:
+      - database
+
+  # Optional: Uncomment to add Ollama service for local LLMs
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: dsagency-ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama-models:/root/.ollama
+  #   networks:
+  #     - dsagency-network
+  #   restart: unless-stopped
+
+networks:
+  dsagency-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  redis-data:
+  backend-logs:
+  uploads:
+  # ollama-models:

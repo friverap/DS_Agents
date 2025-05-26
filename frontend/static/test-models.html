@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Selection Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .container {
+      background-color: #f5f5f5;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .model-list {
+      margin-top: 20px;
+    }
+    .provider {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .model {
+      margin-left: 20px;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Model Selection Test</h1>
+  
+  <div class="container">
+    <h2>Test Backend API Response</h2>
+    <button id="test-api">Fetch Models from API</button>
+    <div id="api-result"></div>
+  </div>
+  
+  <div class="container">
+    <h2>Test Provider Name Formatting</h2>
+    <div>
+      <label for="provider-input">Provider Name:</label>
+      <input type="text" id="provider-input" value="openai">
+      <button id="format-provider">Format Provider Name</button>
+      <div id="format-result"></div>
+    </div>
+  </div>
+  
+  <script>
+    // Function to format provider names
+    function formatProviderName(provider) {
+      const names = {
+        'openai': 'OpenAI',
+        'claude': 'Claude',
+        'google': 'Google'
+      };
+      
+      return names[provider.toLowerCase()] || provider.charAt(0).toUpperCase() + provider.slice(1);
+    }
+    
+    // Test API endpoint
+    document.getElementById('test-api').addEventListener('click', async () => {
+      const resultDiv = document.getElementById('api-result');
+      resultDiv.innerHTML = 'Loading...';
+      
+      try {
+        const response = await fetch('/api/models/providers');
+        
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        let html = '<div class="model-list">';
+        
+        if (data.providers && Array.isArray(data.providers)) {
+          data.providers.forEach(provider => {
+            html += `<div class="provider">${provider.name} (${formatProviderName(provider.name.toLowerCase())})</div>`;
+            
+            if (provider.models && Array.isArray(provider.models)) {
+              provider.models.forEach(model => {
+                html += `<div class="model">${model.name} - ${model.description}</div>`;
+              });
+            }
+          });
+        } else {
+          html += '<p>Unexpected API response format</p>';
+          html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        }
+        
+        html += '</div>';
+        
+        resultDiv.innerHTML = html;
+      } catch (error) {
+        resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+      }
+    });
+    
+    // Test provider formatting
+    document.getElementById('format-provider').addEventListener('click', () => {
+      const input = document.getElementById('provider-input').value;
+      const resultDiv = document.getElementById('format-result');
+      
+      const formatted = formatProviderName(input);
+      resultDiv.innerHTML = `<p>"${input}" formatted as: "${formatted}"</p>`;
+    });
+  </script>
+</body>
+</html> 
